@@ -66,6 +66,6 @@ Description:
 --   => EnterMoto "tag: " 202 "brand: " "Honda" "yr: " 2023
 --                "cost: " 8400.00 "qty: " 3 "avail: " True
 --      SetPrice <item_tag> Float
---   => EnterMoto ... SetPrice 202 9000.00
+--   => EnterMoto ... SetPrice 20290.00
 
 --}
