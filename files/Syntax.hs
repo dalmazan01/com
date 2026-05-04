@@ -74,8 +74,15 @@ type RiderEnv   = [(Int, Rider)]                  -- riders by rider tag
 type RepairEnv  = [(Int, (Int, Int, String))]     -- repairs: id -> (rider_tag, item_tag, note)
 
 -- All three environments bundled together
-type Warehouse = (CatalogEnv, RiderEnv, RepairEnv)
+--type Warehouse = (CatalogEnv, RiderEnv, RepairEnv)
+data Warehouse = W {
+  catalog_env :: CatalogEnv,
+  rider_env :: RiderEnv,
+  repair_env :: RepairEnv
+}
 
+-- initial env
+iEnv = W [] [] []
 -- ── Show instances ───────────────────────────────────────────────────────────
 
 instance Show Brand where

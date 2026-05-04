@@ -11,10 +11,16 @@ instance Show Outcome where
   show (Success w)   = "Success " ++ show w
   show (Failure msg) = "Failure: " ++ msg
 
+instance Show Warehouse where
+  show w =
+    "Warehouse { catalog=" ++ show (catalog_env w) ++
+    ", riders="  ++ show (rider_env w)              ++
+    ", repairs=" ++ show (repair_env w)             ++ " }"
+
 -- ── Entry point ──────────────────────────────────────────────────────────────
 
 runProgram :: Program -> Outcome
-runProgram (Run cmds) = runAll cmds blankWarehouse
+runProgram (Run cmds) = runAll cmds iEnv
 
 -- ── Run a list of commands ───────────────────────────────────────────────────
 
@@ -30,52 +36,41 @@ runAll (c:cs) wh =
 runOne :: Command -> Warehouse -> Outcome
 
 runOne (EnterMoto m) wh =
-  let (catalog, riders, repairs) = wh
-      updatedCatalog = (itemTag m, m) : catalog
-  in Success (updatedCatalog, riders, repairs)
+  let updatedCatalog = (itemTag m, m) : catalog_env wh
+  in Success wh { catalog_env = updatedCatalog }
 
 runOne (EnterRider r) wh =
-  let (catalog, riders, repairs) = wh
-      updatedRiders = (riderTag r, r) : riders
-  in Success (catalog, updatedRiders, repairs)
+  let updatedRiders = (riderTag r, r) : rider_env wh
+  in Success wh { rider_env = updatedRiders }
 
 runOne (LogRepair rt it note) wh =
-  let (catalog, riders, repairs) = wh
-      repairId       = length repairs + 1
-      updatedRepairs = (repairId, (rt, it, note)) : repairs
-  in Success (catalog, riders, updatedRepairs)
+  let repairId       = length (repair_env wh) + 1
+      updatedRepairs = (repairId, (rt, it, note)) : repair_env wh
+  in Success wh { repair_env = updatedRepairs }
 
 runOne (SetPrice it newCost) wh =
-  let (catalog, riders, repairs) = wh
-      updatedCatalog =
+  let updatedCatalog =
         map (\(tag, m) ->
                if tag == it
                  then (tag, m { cost = newCost })
                  else (tag, m))
-            catalog
-  in Success (updatedCatalog, riders, repairs)
+            (catalog_env wh)
+  in Success wh { catalog_env = updatedCatalog }
 
 runOne (SetQty it newQty) wh =
-  let (catalog, riders, repairs) = wh
-      updatedCatalog =
+  let updatedCatalog =
         map (\(tag, m) ->
                if tag == it
                  then (tag, m { qty = newQty })
                  else (tag, m))
-            catalog
-  in Success (updatedCatalog, riders, repairs)
+            (catalog_env wh)
+  in Success wh { catalog_env = updatedCatalog }
 
 runOne (SetAvail it newAvail) wh =
-  let (catalog, riders, repairs) = wh
-      updatedCatalog =
+  let updatedCatalog =
         map (\(tag, m) ->
                if tag == it
                  then (tag, m { avail = newAvail })
                  else (tag, m))
-            catalog
-  in Success (updatedCatalog, riders, repairs)
-
--- ── Empty starting state ─────────────────────────────────────────────────────
-
-blankWarehouse :: Warehouse
-blankWarehouse = ([], [], [])
+            (catalog_env wh)
+  in Success wh { catalog_env = updatedCatalog }
